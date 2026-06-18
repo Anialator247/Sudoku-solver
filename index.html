@@ -3,65 +3,282 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Sudoku Solver</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css"/>
+  <title>Sudoku Solver // Dynamic</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: system-ui, sans-serif; background: #f9f9f9; color: #111; display: flex; justify-content: center; padding: 2rem 1rem; min-height: 100vh; }
-    .wrap { max-width: 520px; width: 100%; }
-    h1 { font-size: 22px; font-weight: 600; margin-bottom: 4px; }
-    .sub { font-size: 13px; color: #666; margin-bottom: 1.25rem; }
-    .preset-label { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #999; margin-bottom: 6px; }
-    .preset-btns { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 1.25rem; }
-    .preset-btns button { font-size: 12px; padding: 5px 14px; border: 1px solid #ddd; border-radius: 6px; background: #fff; cursor: pointer; }
-    .preset-btns button:hover { background: #f0f0f0; }
-    .grid-wrap { display: inline-block; border: 2.5px solid #111; border-radius: 4px; overflow: hidden; margin-bottom: 1rem; }
-    table { border-collapse: collapse; display: block; }
-    td { width: 48px; height: 48px; padding: 0; }
-    td input {
-      width: 100%; height: 100%; border: 1px solid #ccc;
-      text-align: center; font-size: 20px; font-weight: 500;
-      background: #fff; color: #111; outline: none;
-      font-family: 'Courier New', monospace; transition: background 0.1s;
+    *, *::before, *::after { 
+      box-sizing: border-box; 
+      margin: 0; 
+      padding: 0; 
     }
-    td input:focus { background: #e8f0fe; color: #1a56db; }
-    td input.given { font-weight: 700; background: #f3f3f3; color: #111; }
-    td input.solved { color: #0F6E56; background: #f0fdf8; }
-    td input.error { background: #fff0ee; color: #c0392b; }
-    .br { border-right: 2.5px solid #111 !important; }
-    .bb { border-bottom: 2.5px solid #111 !important; }
-    .btns { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 1rem; }
-    .btns button { padding: 9px 20px; border: 1px solid #ccc; border-radius: 8px; background: #fff; font-size: 14px; cursor: pointer; }
-    .btns button:hover { background: #f0f0f0; }
-    .btns button.primary { background: #111; color: #fff; border-color: #111; }
-    .btns button.primary:hover { background: #333; }
-    .status { font-size: 13px; min-height: 20px; color: #666; }
-    .status.ok { color: #0F6E56; }
-    .status.err { color: #c0392b; }
+    
+    body { 
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif; 
+      background: radial-gradient(circle at top middle, #141519 0%, #0b0c0e 100%); 
+      color: #f3f4f6; 
+      display: flex; 
+      justify-content: center; 
+      align-items: center;
+      padding: 2rem 1rem; 
+      min-height: 100vh; 
+    }
+
+    /* Bento Box Wrapper */
+    .wrap { 
+      max-width: 500px; 
+      width: 100%; 
+      background: rgba(255, 255, 255, 0.03);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 24px;
+      padding: 2rem;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    }
+
+    header {
+      margin-bottom: 1.75rem;
+    }
+
+    h1 { 
+      font-size: 26px; 
+      font-weight: 700; 
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, #fff 0%, #a5b4fc 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 6px; 
+    }
+
+    .sub { 
+      font-size: 14px; 
+      color: #9ca3af; 
+      line-height: 1.5;
+    }
+
+    /* Bento Control Section */
+    .control-panel {
+      background: rgba(0, 0, 0, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      border-radius: 16px;
+      padding: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .preset-label { 
+      font-size: 11px; 
+      font-weight: 700; 
+      letter-spacing: 0.08em; 
+      text-transform: uppercase; 
+      color: #6b7280; 
+      margin-bottom: 10px; 
+    }
+
+    .preset-btns { 
+      display: flex; 
+      gap: 8px; 
+    }
+
+    .preset-btns button { 
+      flex: 1;
+      font-family: inherit;
+      font-size: 13px; 
+      font-weight: 500;
+      padding: 8px 0; 
+      border: 1px solid rgba(255, 255, 255, 0.08); 
+      border-radius: 10px; 
+      background: rgba(255, 255, 255, 0.03); 
+      color: #e5e7eb;
+      cursor: pointer; 
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .preset-btns button:hover { 
+      background: rgba(255, 255, 255, 0.1); 
+      border-color: rgba(255, 255, 255, 0.2);
+      transform: translateY(-1px);
+    }
+
+    .preset-btns button:active {
+      transform: translateY(0);
+    }
+
+    /* Sudoku Grid Container Styling */
+    .grid-wrap { 
+      display: flex;
+      justify-content: center;
+      background: #111318;
+      border: 3px solid #1f2937; 
+      border-radius: 16px; 
+      overflow: hidden; 
+      margin-bottom: 1.5rem; 
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    }
+
+    table { 
+      border-collapse: collapse; 
+    }
+
+    td { 
+      width: 48px; 
+      height: 48px; 
+      padding: 0; 
+    }
+
+    /* Core Input Styling */
+    td input {
+      width: 100%; 
+      height: 100%; 
+      border: 0.5px solid rgba(255, 255, 255, 0.05);
+      text-align: center; 
+      font-size: 22px; 
+      background: transparent; 
+      color: #f3f4f6; 
+      outline: none;
+      font-family: 'JetBrains Mono', monospace; 
+      transition: all 0.15s ease;
+    }
+
+    /* Soft Grid Intersections */
+    td input:hover {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    td input:focus { 
+      background: rgba(99, 102, 241, 0.15); 
+      color: #6366f1; 
+      box-shadow: inset 0 0 0 2px #6366f1;
+    }
+
+    /* States mapping to dynamic coloring */
+    td input.given { 
+      font-weight: 700; 
+      background: rgba(255, 255, 255, 0.04); 
+      color: #ffffff; 
+    }
+
+    td input.solved { 
+      font-weight: 500;
+      color: #10b981; 
+      background: rgba(16, 185, 129, 0.06); 
+      animation: pulseIn 0.4s ease-out;
+    }
+
+    td input.error { 
+      background: rgba(239, 68, 68, 0.1); 
+      color: #ef4444; 
+    }
+
+    /* Custom 3x3 Box Borders */
+    .br { border-right: 3px solid #1f2937 !important; }
+    .bb { border-bottom: 3px solid #1f2937 !important; }
+
+    /* Action Buttons Area */
+    .btns { 
+      display: flex; 
+      gap: 10px; 
+      margin-bottom: 1.25rem; 
+    }
+
+    .btns button { 
+      flex: 1;
+      padding: 12px; 
+      border: 1px solid rgba(255, 255, 255, 0.08); 
+      border-radius: 12px; 
+      background: rgba(255, 255, 255, 0.03); 
+      color: #d1d5db;
+      font-family: inherit;
+      font-size: 14px; 
+      font-weight: 600;
+      cursor: pointer; 
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .btns button:hover { 
+      background: rgba(255, 255, 255, 0.08); 
+      color: #fff;
+    }
+
+    /* Glowing Primary CTA */
+    .btns button.primary { 
+      flex: 1.5;
+      background: #6366f1; 
+      color: #fff; 
+      border-color: #6366f1; 
+      box-shadow: 0 4px 14px rgba(99, 102, 241, 0.3);
+    }
+
+    .btns button.primary:hover { 
+      background: #4f46e5; 
+      box-shadow: 0 6px 20px rgba(99, 102, 241, 0.45);
+      transform: translateY(-1px);
+    }
+    
+    .btns button.primary:active {
+      transform: translateY(0);
+    }
+
+    /* Dynamic Status Alert */
+    .status { 
+      font-size: 13px; 
+      font-weight: 500;
+      min-height: 24px; 
+      color: #9ca3af; 
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 8px;
+      border-radius: 6px;
+      transition: all 0.2s ease;
+    }
+    
+    .status.ok { 
+      color: #34d399; 
+      background: rgba(52, 211, 153, 0.05);
+    }
+    
+    .status.err { 
+      color: #f87171; 
+      background: rgba(248, 113, 113, 0.05);
+    }
+
+    @keyframes pulseIn {
+      0% { background: rgba(16, 185, 129, 0.3); transform: scale(0.96); }
+      100% { background: rgba(16, 185, 129, 0.06); transform: scale(1); }
+    }
   </style>
 </head>
 <body>
-<div class="wrap">
-  <h1>Sudoku Solver</h1>
-  <p class="sub">Type in your puzzle, leave blanks empty, then hit Solve.</p>
 
-  <div class="preset-label">Load an example</div>
-  <div class="preset-btns">
-    <button onclick="loadPreset('easy')">Easy</button>
-    <button onclick="loadPreset('medium')">Medium</button>
-    <button onclick="loadPreset('hard')">Hard</button>
-    <button onclick="loadPreset('expert')">Expert</button>
+<div class="wrap">
+  <header>
+    <h1>Sudoku Solver</h1>
+    <p class="sub">Input your puzzle configuration, leave target boxes empty, then press Solve.</p>
+  </header>
+
+  <div class="control-panel">
+    <div class="preset-label">Load Preset Scenario</div>
+    <div class="preset-btns">
+      <button onclick="loadPreset('easy')">Easy</button>
+      <button onclick="loadPreset('medium')">Medium</button>
+      <button onclick="loadPreset('hard')">Hard</button>
+      <button onclick="loadPreset('expert')">Expert</button>
+    </div>
   </div>
 
   <div class="grid-wrap">
     <table id="grid"></table>
   </div>
-  <br>
+
   <div class="btns">
-    <button class="primary" onclick="solve()">&#9654; Solve</button>
-    <button onclick="clearSolved()">Clear solution</button>
+    <button class="primary" onclick="solve()">Solve Board</button>
+    <button onclick="clearSolved()">Clear Solved</button>
     <button onclick="clearAll()">Reset</button>
   </div>
+  
   <div class="status" id="status"></div>
 </div>
 
@@ -109,6 +326,7 @@ function buildGrid() {
       inp.addEventListener('input', () => {
         if (!/^[1-9]$/.test(inp.value)) inp.value = '';
         inp.classList.remove('solved', 'error', 'given');
+        document.getElementById('status').className = 'status';
         document.getElementById('status').textContent = '';
       });
       if (c === 2 || c === 5) td.classList.add('br');
@@ -181,7 +399,7 @@ function solve() {
   const b = getBoard();
   if (!validateInitial(b)) {
     status.className = 'status err';
-    status.textContent = 'The puzzle has conflicting numbers. Please check your input.';
+    status.textContent = '✕ Conflicting configuration detected.';
     return;
   }
   const copy = b.map(row => [...row]);
@@ -191,10 +409,10 @@ function solve() {
       if (b[r][c] === 0) { cells[r][c].value = copy[r][c]; cells[r][c].classList.add('solved'); }
     }
     status.className = 'status ok';
-    status.textContent = `Solved in ${(performance.now()-t).toFixed(1)}ms.`;
+    status.textContent = `✓ Solved perfectly in ${(performance.now()-t).toFixed(1)}ms.`;
   } else {
     status.className = 'status err';
-    status.textContent = 'No solution exists for this puzzle.';
+    status.textContent = '✕ No possible solution matches this grid layout.';
   }
 }
 
@@ -203,11 +421,13 @@ function clearSolved() {
     if (cells[r][c].classList.contains('solved')) { cells[r][c].value = ''; cells[r][c].classList.remove('solved'); }
     cells[r][c].classList.remove('error');
   }
+  document.getElementById('status').className = 'status';
   document.getElementById('status').textContent = '';
 }
 
 function clearAll() {
   for (let r = 0; r < 9; r++) for (let c = 0; c < 9; c++) { cells[r][c].value = ''; cells[r][c].className = ''; }
+  document.getElementById('status').className = 'status';
   document.getElementById('status').textContent = '';
 }
 
