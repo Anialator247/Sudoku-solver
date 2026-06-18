@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Sudoku Solver // Dynamic</title>
+  <title>Sudoku Solver</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   
   <style>
     *, *::before, *::after { 
@@ -16,70 +16,60 @@
     }
     
     body { 
-      font-family: 'Plus Jakarta Sans', system-ui, sans-serif; 
-      background: radial-gradient(circle at top middle, #141519 0%, #0b0c0e 100%); 
-      color: #f3f4f6; 
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; 
+      background-color: #f5f5f7; 
+      color: #1d1d1f; 
       display: flex; 
       justify-content: center; 
       align-items: center;
       padding: 2rem 1rem; 
       min-height: 100vh; 
+      -webkit-font-smoothing: antialiased;
     }
 
-    /* Bento Box Wrapper */
+   
     .wrap { 
-      max-width: 500px; 
+      max-width: 480px; 
       width: 100%; 
-      background: rgba(255, 255, 255, 0.03);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 24px;
-      padding: 2rem;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 2.5rem;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+      transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
     }
 
     header {
-      margin-bottom: 1.75rem;
+      margin-bottom: 2rem;
+      text-align: center;
     }
 
     h1 { 
-      font-size: 26px; 
-      font-weight: 700; 
-      letter-spacing: -0.02em;
-      background: linear-gradient(135deg, #fff 0%, #a5b4fc 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      margin-bottom: 6px; 
+      font-size: 28px; 
+      font-weight: 600; 
+      letter-spacing: -0.03em;
+      color: #1d1d1f;
+      margin-bottom: 8px; 
     }
 
     .sub { 
       font-size: 14px; 
-      color: #9ca3af; 
-      line-height: 1.5;
+      color: #86868b; 
+      line-height: 1.47059;
+      max-width: 90%;
+      margin: 0 auto;
     }
 
-    /* Bento Control Section */
+    
     .control-panel {
-      background: rgba(0, 0, 0, 0.2);
-      border: 1px solid rgba(255, 255, 255, 0.04);
-      border-radius: 16px;
-      padding: 1rem;
-      margin-bottom: 1.5rem;
-    }
-
-    .preset-label { 
-      font-size: 11px; 
-      font-weight: 700; 
-      letter-spacing: 0.08em; 
-      text-transform: uppercase; 
-      color: #6b7280; 
-      margin-bottom: 10px; 
+      background: #f5f5f7;
+      border-radius: 12px;
+      padding: 4px;
+      margin-bottom: 1.75rem;
     }
 
     .preset-btns { 
       display: flex; 
-      gap: 8px; 
+      gap: 2px; 
     }
 
     .preset-btns button { 
@@ -87,35 +77,35 @@
       font-family: inherit;
       font-size: 13px; 
       font-weight: 500;
-      padding: 8px 0; 
-      border: 1px solid rgba(255, 255, 255, 0.08); 
-      border-radius: 10px; 
-      background: rgba(255, 255, 255, 0.03); 
-      color: #e5e7eb;
+      padding: 7px 0; 
+      border: none;
+      border-radius: 9px; 
+      background: transparent; 
+      color: #1d1d1f;
       cursor: pointer; 
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
     }
 
     .preset-btns button:hover { 
-      background: rgba(255, 255, 255, 0.1); 
-      border-color: rgba(255, 255, 255, 0.2);
-      transform: translateY(-1px);
+      background: rgba(0, 0, 0, 0.04);
     }
 
-    .preset-btns button:active {
-      transform: translateY(0);
+   
+    .preset-btns button.active-preset {
+      background: #ffffff;
+      box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.1), 0px 1px 1px rgba(0, 0, 0, 0.06);
     }
 
-    /* Sudoku Grid Container Styling */
+    /* Crisp, High-Contrast Grid Wrap */
     .grid-wrap { 
       display: flex;
       justify-content: center;
-      background: #111318;
-      border: 3px solid #1f2937; 
-      border-radius: 16px; 
+      background: #ffffff;
+      border: 2px solid #1d1d1f; 
+      border-radius: 14px; 
       overflow: hidden; 
-      margin-bottom: 1.5rem; 
-      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+      margin-bottom: 1.75rem; 
+      transition: box-shadow 0.3s ease;
     }
 
     table { 
@@ -123,131 +113,120 @@
     }
 
     td { 
-      width: 48px; 
-      height: 48px; 
+      width: 46px; 
+      height: 46px; 
       padding: 0; 
     }
 
-    /* Core Input Styling */
+    /* Clean Input Styling */
     td input {
       width: 100%; 
       height: 100%; 
-      border: 0.5px solid rgba(255, 255, 255, 0.05);
+      border: 0.5px solid #d2d2d7;
       text-align: center; 
-      font-size: 22px; 
+      font-size: 20px; 
       background: transparent; 
-      color: #f3f4f6; 
+      color: #1d1d1f; 
       outline: none;
-      font-family: 'JetBrains Mono', monospace; 
-      transition: all 0.15s ease;
+      font-family: inherit; 
+      transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
     }
 
-    /* Soft Grid Intersections */
-    td input:hover {
-      background: rgba(255, 255, 255, 0.02);
-    }
-
+    /* Subtle Apple Focus Ring Interaction */
     td input:focus { 
-      background: rgba(99, 102, 241, 0.15); 
-      color: #6366f1; 
-      box-shadow: inset 0 0 0 2px #6366f1;
+      background: #ffffff;
+      box-shadow: inset 0 0 0 2px #0066cc; /* Apple Accent Blue */
+      border-color: #0066cc;
+      z-index: 10;
+      position: relative;
     }
 
-    /* States mapping to dynamic coloring */
+    /* State Layout Customization */
     td input.given { 
-      font-weight: 700; 
-      background: rgba(255, 255, 255, 0.04); 
-      color: #ffffff; 
+      font-weight: 600; 
+      background: #f5f5f7; 
+      color: #1d1d1f; 
     }
 
+    /* Elegant, understated response colors instead of muddy greens */
     td input.solved { 
       font-weight: 500;
-      color: #10b981; 
-      background: rgba(16, 185, 129, 0.06); 
-      animation: pulseIn 0.4s ease-out;
+      color: #0066cc; 
+      background: #f2f7fd; 
+      animation: appleReveal 0.4s cubic-bezier(0.25, 1, 0.5, 1);
     }
 
     td input.error { 
-      background: rgba(239, 68, 68, 0.1); 
-      color: #ef4444; 
+      background: #fff2f2; 
+      color: #ff3b30; /* Apple System Red */
     }
 
-    /* Custom 3x3 Box Borders */
-    .br { border-right: 3px solid #1f2937 !important; }
-    .bb { border-bottom: 3px solid #1f2937 !important; }
+    /* Distinct 3x3 Outer Borders */
+    .br { border-right: 2px solid #1d1d1f !important; }
+    .bb { border-bottom: 2px solid #1d1d1f !important; }
 
-    /* Action Buttons Area */
+    /* Action Buttons Architecture */
     .btns { 
       display: flex; 
-      gap: 10px; 
+      gap: 8px; 
       margin-bottom: 1.25rem; 
     }
 
     .btns button { 
       flex: 1;
       padding: 12px; 
-      border: 1px solid rgba(255, 255, 255, 0.08); 
+      border: 1px solid #d2d2d7; 
       border-radius: 12px; 
-      background: rgba(255, 255, 255, 0.03); 
-      color: #d1d5db;
+      background: #ffffff; 
+      color: #1d1d1f;
       font-family: inherit;
       font-size: 14px; 
-      font-weight: 600;
+      font-weight: 500;
       cursor: pointer; 
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
     }
 
     .btns button:hover { 
-      background: rgba(255, 255, 255, 0.08); 
-      color: #fff;
+      background: #f5f5f7;
+      border-color: #86868b;
     }
 
-    /* Glowing Primary CTA */
+    /* Solid Apple Accent Primary CTA */
     .btns button.primary { 
       flex: 1.5;
-      background: #6366f1; 
-      color: #fff; 
-      border-color: #6366f1; 
-      box-shadow: 0 4px 14px rgba(99, 102, 241, 0.3);
+      background: #0071e3; /* Apple System Blue Link Button */
+      color: #ffffff; 
+      border: none; 
     }
 
     .btns button.primary:hover { 
-      background: #4f46e5; 
-      box-shadow: 0 6px 20px rgba(99, 102, 241, 0.45);
-      transform: translateY(-1px);
-    }
-    
-    .btns button.primary:active {
-      transform: translateY(0);
+      background: #0077ed; 
+      transform: scale(1.02); /* Spring scale physics signature to iOS */
     }
 
-    /* Dynamic Status Alert */
+    .btns button.primary:active {
+      transform: scale(0.98);
+    }
+
+    /* Clean Informative Status Panel */
     .status { 
       font-size: 13px; 
       font-weight: 500;
       min-height: 24px; 
-      color: #9ca3af; 
+      color: #86868b; 
       display: flex;
+      justify-content: center;
       align-items: center;
-      gap: 6px;
-      padding: 4px 8px;
-      border-radius: 6px;
-      transition: all 0.2s ease;
+      transition: all 0.3s ease;
     }
     
-    .status.ok { 
-      color: #34d399; 
-      background: rgba(52, 211, 153, 0.05);
-    }
-    
-    .status.err { 
-      color: #f87171; 
-      background: rgba(248, 113, 113, 0.05);
-    }
+    .status.ok { color: #1d1d1f; font-weight: 600; }
+    .status.err { color: #ff3b30; }
 
-    @keyframes pulseIn {
-      0% { background: rgba(16, 185, 129, 0.3); transform: scale(0.96); }
-      100% { background: rgba(16, 185, 129, 0.06); transform: scale(1); }
+    /* Apple-style spring/fade scale reveals */
+    @keyframes appleReveal {
+      0% { opacity: 0.5; transform: scale(0.92); }
+      100% { opacity: 1; transform: scale(1); }
     }
   </style>
 </head>
@@ -256,16 +235,15 @@
 <div class="wrap">
   <header>
     <h1>Sudoku Solver</h1>
-    <p class="sub">Input your puzzle configuration, leave target boxes empty, then press Solve.</p>
+    <p class="sub">Input your puzzle configuration, leave target boxes empty, then click Solve.</p>
   </header>
 
   <div class="control-panel">
-    <div class="preset-label">Load Preset Scenario</div>
     <div class="preset-btns">
-      <button onclick="loadPreset('easy')">Easy</button>
-      <button onclick="loadPreset('medium')">Medium</button>
-      <button onclick="loadPreset('hard')">Hard</button>
-      <button onclick="loadPreset('expert')">Expert</button>
+      <button id="btn-easy" onclick="loadPreset('easy', this)">Easy</button>
+      <button id="btn-medium" onclick="loadPreset('medium', this)">Medium</button>
+      <button id="btn-hard" onclick="loadPreset('hard', this)">Hard</button>
+      <button id="btn-expert" onclick="loadPreset('expert', this)">Expert</button>
     </div>
   </div>
 
@@ -348,8 +326,13 @@ function navigate(e, r, c) {
   }
 }
 
-function loadPreset(name) {
+function loadPreset(name, btnElement) {
   clearAll();
+  
+  // Update segmented control selection style
+  document.querySelectorAll('.preset-btns button').forEach(b => b.classList.remove('active-preset'));
+  if (btnElement) btnElement.classList.add('active-preset');
+
   const data = presets[name];
   for (let r = 0; r < 9; r++) for (let c = 0; c < 9; c++) {
     if (data[r][c]) { cells[r][c].value = data[r][c]; cells[r][c].classList.add('given'); }
@@ -399,7 +382,7 @@ function solve() {
   const b = getBoard();
   if (!validateInitial(b)) {
     status.className = 'status err';
-    status.textContent = '✕ Conflicting configuration detected.';
+    status.textContent = 'Conflicting entries detected.';
     return;
   }
   const copy = b.map(row => [...row]);
@@ -409,10 +392,10 @@ function solve() {
       if (b[r][c] === 0) { cells[r][c].value = copy[r][c]; cells[r][c].classList.add('solved'); }
     }
     status.className = 'status ok';
-    status.textContent = `✓ Solved perfectly in ${(performance.now()-t).toFixed(1)}ms.`;
+    status.textContent = `Solved in ${(performance.now()-t).toFixed(1)}ms`;
   } else {
     status.className = 'status err';
-    status.textContent = '✕ No possible solution matches this grid layout.';
+    status.textContent = 'No solution exists.';
   }
 }
 
@@ -426,6 +409,7 @@ function clearSolved() {
 }
 
 function clearAll() {
+  document.querySelectorAll('.preset-btns button').forEach(b => b.classList.remove('active-preset'));
   for (let r = 0; r < 9; r++) for (let c = 0; c < 9; c++) { cells[r][c].value = ''; cells[r][c].className = ''; }
   document.getElementById('status').className = 'status';
   document.getElementById('status').textContent = '';
