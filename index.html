@@ -1,419 +1,464 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Sudoku Solver</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
   <style>
-    *, *::before, *::after { 
-      box-sizing: border-box; 
-      margin: 0; 
-      padding: 0; 
-    }
-    
-    body { 
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; 
-      background-color: #f5f5f7; 
-      color: #1d1d1f; 
-      display: flex; 
-      justify-content: center; 
-      align-items: center;
-      padding: 2rem 1rem; 
-      min-height: 100vh; 
-      -webkit-font-smoothing: antialiased;
-    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:#0b0c0e;color:#f3f4f6;display:flex;justify-content:center;padding:2rem 1rem;min-height:100vh}
+    .wrap{max-width:500px;width:100%;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:24px;padding:2rem;box-shadow:0 20px 40px rgba(0,0,0,0.4)}
+    header{margin-bottom:1.5rem}
+    h1{font-size:26px;font-weight:700;letter-spacing:-0.02em;color:#fff;margin-bottom:6px}
+    .sub{font-size:14px;color:#9ca3af;line-height:1.5}
 
-   
-    .wrap { 
-      max-width: 480px; 
-      width: 100%; 
-      background: #ffffff;
-      border-radius: 20px;
-      padding: 2.5rem;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
-      transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
-    }
+    /* TAB SWITCHER */
+    .tabs{display:flex;gap:4px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:4px;margin-bottom:1.5rem}
+    .tab{flex:1;padding:8px;font-family:inherit;font-size:13px;font-weight:500;border:none;border-radius:8px;background:transparent;color:#9ca3af;cursor:pointer;transition:all 0.2s}
+    .tab.active{background:rgba(255,255,255,0.1);color:#fff}
 
-    header {
-      margin-bottom: 2rem;
-      text-align: center;
-    }
+    /* PANELS */
+    .panel{display:none}.panel.active{display:block}
 
-    h1 { 
-      font-size: 28px; 
-      font-weight: 600; 
-      letter-spacing: -0.03em;
-      color: #1d1d1f;
-      margin-bottom: 8px; 
-    }
+    /* PRESET PANEL */
+    .section-box{background:rgba(0,0,0,0.2);border:1px solid rgba(255,255,255,0.04);border-radius:16px;padding:1rem;margin-bottom:1.25rem}
+    .section-label{font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#6b7280;margin-bottom:10px}
+    .preset-btns{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+    .preset-btns button{font-family:inherit;font-size:13px;font-weight:500;padding:8px 0;border:1px solid rgba(255,255,255,0.08);border-radius:10px;background:rgba(255,255,255,0.03);color:#e5e7eb;cursor:pointer;transition:all 0.15s}
+    .preset-btns button:hover,.preset-btns button.active{background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.2)}
 
-    .sub { 
-      font-size: 14px; 
-      color: #86868b; 
-      line-height: 1.47059;
-      max-width: 90%;
-      margin: 0 auto;
-    }
+    /* UPLOAD PANEL */
+    .upload-zone{border:1.5px dashed rgba(255,255,255,0.15);border-radius:16px;padding:2rem 1rem;text-align:center;margin-bottom:1rem;transition:border-color 0.2s;cursor:pointer;position:relative}
+    .upload-zone:hover{border-color:rgba(99,102,241,0.5)}
+    .upload-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+    .upload-icon{font-size:36px;margin-bottom:12px;color:#6b7280}
+    .upload-title{font-size:15px;font-weight:600;color:#e5e7eb;margin-bottom:4px}
+    .upload-hint{font-size:13px;color:#6b7280}
+    .cam-btn{width:100%;padding:12px;font-family:inherit;font-size:14px;font-weight:600;border:1px solid rgba(255,255,255,0.08);border-radius:12px;background:rgba(255,255,255,0.03);color:#d1d5db;cursor:pointer;transition:all 0.15s;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:1rem}
+    .cam-btn:hover{background:rgba(255,255,255,0.08);color:#fff}
 
-    
-    .control-panel {
-      background: #f5f5f7;
-      border-radius: 12px;
-      padding: 4px;
-      margin-bottom: 1.75rem;
-    }
+    /* CAMERA VIEW */
+    #camera-view{display:none;flex-direction:column;align-items:center;gap:12px;margin-bottom:1rem}
+    #camera-video{width:100%;border-radius:12px;border:1px solid rgba(255,255,255,0.1);max-height:300px;object-fit:cover}
+    .snap-btn{padding:12px 32px;font-family:inherit;font-size:15px;font-weight:700;border:none;border-radius:12px;background:#6366f1;color:#fff;cursor:pointer;box-shadow:0 4px 14px rgba(99,102,241,0.3);transition:all 0.2s}
+    .snap-btn:hover{background:#4f46e5}
+    .stop-cam{font-size:13px;color:#9ca3af;background:none;border:none;cursor:pointer;text-decoration:underline;margin-top:4px}
 
-    .preset-btns { 
-      display: flex; 
-      gap: 2px; 
-    }
+    /* PREVIEW */
+    #img-preview-wrap{display:none;margin-bottom:1rem;text-align:center}
+    #img-preview{max-width:100%;border-radius:10px;border:1px solid rgba(255,255,255,0.1);max-height:240px;object-fit:contain}
+    .ocr-btn{width:100%;padding:12px;font-family:inherit;font-size:14px;font-weight:700;border:none;border-radius:12px;background:#6366f1;color:#fff;cursor:pointer;box-shadow:0 4px 14px rgba(99,102,241,0.3);transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:8px}
+    .ocr-btn:hover{background:#4f46e5}
+    .ocr-btn:disabled{opacity:0.5;cursor:not-allowed}
 
-    .preset-btns button { 
-      flex: 1;
-      font-family: inherit;
-      font-size: 13px; 
-      font-weight: 500;
-      padding: 7px 0; 
-      border: none;
-      border-radius: 9px; 
-      background: transparent; 
-      color: #1d1d1f;
-      cursor: pointer; 
-      transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
-    }
+    /* OCR PROGRESS */
+    #ocr-status{font-size:13px;color:#9ca3af;text-align:center;min-height:20px;margin-top:8px}
+    .progress-bar-wrap{height:4px;background:rgba(255,255,255,0.08);border-radius:4px;overflow:hidden;margin-top:6px;display:none}
+    .progress-bar{height:100%;width:0%;background:#6366f1;border-radius:4px;transition:width 0.2s}
 
-    .preset-btns button:hover { 
-      background: rgba(0, 0, 0, 0.04);
-    }
+    /* SUDOKU GRID */
+    .grid-wrap{display:flex;justify-content:center;background:#111318;border:3px solid #1f2937;border-radius:16px;overflow:hidden;margin-bottom:1.5rem;box-shadow:0 10px 25px rgba(0,0,0,0.3)}
+    table{border-collapse:collapse}
+    td{width:48px;height:48px;padding:0}
+    td input{width:100%;height:100%;border:0.5px solid rgba(255,255,255,0.05);text-align:center;font-size:22px;background:transparent;color:#f3f4f6;outline:none;font-family:'JetBrains Mono',monospace;transition:all 0.15s}
+    td input:hover{background:rgba(255,255,255,0.02)}
+    td input:focus{background:rgba(99,102,241,0.15);color:#6366f1;box-shadow:inset 0 0 0 2px #6366f1}
+    td input.given{font-weight:700;background:rgba(255,255,255,0.04);color:#fff}
+    td input.solved{color:#10b981;background:rgba(16,185,129,0.06)}
+    td input.ocr-filled{color:#a78bfa;background:rgba(167,139,250,0.08)}
+    td input.error{background:rgba(239,68,68,0.1);color:#ef4444}
+    .br{border-right:3px solid #1f2937!important}
+    .bb{border-bottom:3px solid #1f2937!important}
 
-   
-    .preset-btns button.active-preset {
-      background: #ffffff;
-      box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.1), 0px 1px 1px rgba(0, 0, 0, 0.06);
-    }
+    /* ACTION BUTTONS */
+    .btns{display:flex;gap:10px;margin-bottom:1.25rem}
+    .btns button{flex:1;padding:12px;border:1px solid rgba(255,255,255,0.08);border-radius:12px;background:rgba(255,255,255,0.03);color:#d1d5db;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.2s}
+    .btns button:hover{background:rgba(255,255,255,0.08);color:#fff}
+    .btns button.primary{flex:1.5;background:#6366f1;color:#fff;border-color:#6366f1;box-shadow:0 4px 14px rgba(99,102,241,0.3)}
+    .btns button.primary:hover{background:#4f46e5;box-shadow:0 6px 20px rgba(99,102,241,0.45)}
+    .status{font-size:13px;font-weight:500;min-height:24px;color:#9ca3af;display:flex;align-items:center;gap:6px;padding:4px 8px;border-radius:6px}
+    .status.ok{color:#34d399;background:rgba(52,211,153,0.05)}
+    .status.err{color:#f87171;background:rgba(248,113,113,0.05)}
+    .status.info{color:#818cf8;background:rgba(129,140,248,0.05)}
 
-    /* Crisp, High-Contrast Grid Wrap */
-    .grid-wrap { 
-      display: flex;
-      justify-content: center;
-      background: #ffffff;
-      border: 2px solid #1d1d1f; 
-      border-radius: 14px; 
-      overflow: hidden; 
-      margin-bottom: 1.75rem; 
-      transition: box-shadow 0.3s ease;
-    }
-
-    table { 
-      border-collapse: collapse; 
-    }
-
-    td { 
-      width: 46px; 
-      height: 46px; 
-      padding: 0; 
-    }
-
-    /* Clean Input Styling */
-    td input {
-      width: 100%; 
-      height: 100%; 
-      border: 0.5px solid #d2d2d7;
-      text-align: center; 
-      font-size: 20px; 
-      background: transparent; 
-      color: #1d1d1f; 
-      outline: none;
-      font-family: inherit; 
-      transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
-    }
-
-    /* Subtle Apple Focus Ring Interaction */
-    td input:focus { 
-      background: #ffffff;
-      box-shadow: inset 0 0 0 2px #0066cc; /* Apple Accent Blue */
-      border-color: #0066cc;
-      z-index: 10;
-      position: relative;
-    }
-
-    /* State Layout Customization */
-    td input.given { 
-      font-weight: 600; 
-      background: #f5f5f7; 
-      color: #1d1d1f; 
-    }
-
-    /* Elegant, understated response colors instead of muddy greens */
-    td input.solved { 
-      font-weight: 500;
-      color: #0066cc; 
-      background: #f2f7fd; 
-      animation: appleReveal 0.4s cubic-bezier(0.25, 1, 0.5, 1);
-    }
-
-    td input.error { 
-      background: #fff2f2; 
-      color: #ff3b30; /* Apple System Red */
-    }
-
-    /* Distinct 3x3 Outer Borders */
-    .br { border-right: 2px solid #1d1d1f !important; }
-    .bb { border-bottom: 2px solid #1d1d1f !important; }
-
-    /* Action Buttons Architecture */
-    .btns { 
-      display: flex; 
-      gap: 8px; 
-      margin-bottom: 1.25rem; 
-    }
-
-    .btns button { 
-      flex: 1;
-      padding: 12px; 
-      border: 1px solid #d2d2d7; 
-      border-radius: 12px; 
-      background: #ffffff; 
-      color: #1d1d1f;
-      font-family: inherit;
-      font-size: 14px; 
-      font-weight: 500;
-      cursor: pointer; 
-      transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
-    }
-
-    .btns button:hover { 
-      background: #f5f5f7;
-      border-color: #86868b;
-    }
-
-    /* Solid Apple Accent Primary CTA */
-    .btns button.primary { 
-      flex: 1.5;
-      background: #0071e3; /* Apple System Blue Link Button */
-      color: #ffffff; 
-      border: none; 
-    }
-
-    .btns button.primary:hover { 
-      background: #0077ed; 
-      transform: scale(1.02); /* Spring scale physics signature to iOS */
-    }
-
-    .btns button.primary:active {
-      transform: scale(0.98);
-    }
-
-    /* Clean Informative Status Panel */
-    .status { 
-      font-size: 13px; 
-      font-weight: 500;
-      min-height: 24px; 
-      color: #86868b; 
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      transition: all 0.3s ease;
-    }
-    
-    .status.ok { color: #1d1d1f; font-weight: 600; }
-    .status.err { color: #ff3b30; }
-
-    /* Apple-style spring/fade scale reveals */
-    @keyframes appleReveal {
-      0% { opacity: 0.5; transform: scale(0.92); }
-      100% { opacity: 1; transform: scale(1); }
-    }
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,0.2);border-top-color:#6366f1;border-radius:50%;animation:spin 0.7s linear infinite;display:inline-block}
+    #canvas-hidden{display:none}
   </style>
 </head>
 <body>
-
 <div class="wrap">
   <header>
     <h1>Sudoku Solver</h1>
-    <p class="sub">Input your puzzle configuration, leave target boxes empty, then click Solve.</p>
+    <p class="sub">Enter a puzzle manually, scan a photo, or use your camera.</p>
   </header>
 
-  <div class="control-panel">
-    <div class="preset-btns">
-      <button id="btn-easy" onclick="loadPreset('easy', this)">Easy</button>
-      <button id="btn-medium" onclick="loadPreset('medium', this)">Medium</button>
-      <button id="btn-hard" onclick="loadPreset('hard', this)">Hard</button>
-      <button id="btn-expert" onclick="loadPreset('expert', this)">Expert</button>
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('manual',this)">✏️ Manual</button>
+    <button class="tab" onclick="switchTab('scan',this)">📷 Scan puzzle</button>
+  </div>
+
+  <!-- MANUAL PANEL -->
+  <div id="panel-manual" class="panel active">
+    <div class="section-box">
+      <div class="section-label">Load a preset</div>
+      <div class="preset-btns">
+        <button onclick="loadPreset('easy',this)">Easy</button>
+        <button onclick="loadPreset('medium',this)">Medium</button>
+        <button onclick="loadPreset('hard',this)">Hard</button>
+        <button onclick="loadPreset('expert',this)">Expert</button>
+      </div>
     </div>
   </div>
 
+  <!-- SCAN PANEL -->
+  <div id="panel-scan" class="panel">
+    <!-- Camera -->
+    <div id="camera-view">
+      <video id="camera-video" autoplay playsinline></video>
+      <button class="snap-btn" onclick="snapPhoto()">📸 Take photo</button>
+      <button class="stop-cam" onclick="stopCamera()">Cancel</button>
+    </div>
+
+    <button class="cam-btn" onclick="startCamera()" id="cam-open-btn">
+      <span>📷</span> Use camera
+    </button>
+
+    <!-- Upload from roll -->
+    <div class="upload-zone" onclick="document.getElementById('file-input').click()">
+      <input type="file" id="file-input" accept="image/*" onchange="handleFile(event)">
+      <div class="upload-icon">🖼️</div>
+      <div class="upload-title">Upload from camera roll</div>
+      <div class="upload-hint">Tap to choose a photo</div>
+    </div>
+
+    <!-- Preview -->
+    <div id="img-preview-wrap">
+      <img id="img-preview" alt="Puzzle preview"/>
+    </div>
+
+    <button class="ocr-btn" id="ocr-btn" onclick="runOCR()" disabled>
+      🔍 Read puzzle from image
+    </button>
+    <div class="progress-bar-wrap" id="progress-wrap">
+      <div class="progress-bar" id="progress-bar"></div>
+    </div>
+    <div id="ocr-status"></div>
+    <br>
+  </div>
+
+  <!-- ALWAYS VISIBLE GRID -->
   <div class="grid-wrap">
     <table id="grid"></table>
   </div>
 
   <div class="btns">
-    <button class="primary" onclick="solve()">Solve Board</button>
-    <button onclick="clearSolved()">Clear Solved</button>
+    <button class="primary" onclick="solve()">▶ Solve board</button>
+    <button onclick="clearSolved()">Clear solved</button>
     <button onclick="clearAll()">Reset</button>
   </div>
-  
   <div class="status" id="status"></div>
 </div>
 
+<canvas id="canvas-hidden"></canvas>
+
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script>
-const presets = {
-  easy:[
-    [5,3,0,0,7,0,0,0,0],[6,0,0,1,9,5,0,0,0],[0,9,8,0,0,0,0,6,0],
-    [8,0,0,0,6,0,0,0,3],[4,0,0,8,0,3,0,0,1],[7,0,0,0,2,0,0,0,6],
-    [0,6,0,0,0,0,2,8,0],[0,0,0,4,1,9,0,0,5],[0,0,0,0,8,0,0,7,9]
-  ],
-  medium:[
-    [0,0,0,2,6,0,7,0,1],[6,8,0,0,7,0,0,9,0],[1,9,0,0,0,4,5,0,0],
-    [8,2,0,1,0,0,0,4,0],[0,0,4,6,0,2,9,0,0],[0,5,0,0,0,3,0,2,8],
-    [0,0,9,3,0,0,0,7,4],[0,4,0,0,5,0,0,3,6],[7,0,3,0,1,8,0,0,0]
-  ],
-  hard:[
-    [0,0,0,6,0,0,4,0,0],[7,0,0,0,0,3,6,0,0],[0,0,0,0,9,1,0,8,0],
-    [0,0,0,0,0,0,0,0,0],[0,5,0,1,8,0,0,0,3],[0,0,0,3,0,6,0,4,5],
-    [0,4,0,2,0,0,0,6,0],[9,0,3,0,0,0,0,0,0],[0,2,0,0,0,0,1,0,0]
-  ],
-  expert:[
-    [0,0,0,0,0,0,0,0,0],[0,0,0,0,0,3,0,8,5],[0,0,1,0,2,0,0,0,0],
-    [0,0,0,5,0,7,0,0,0],[0,0,4,0,0,0,1,0,0],[0,9,0,0,0,0,0,0,0],
-    [5,0,0,0,0,0,0,7,3],[0,0,2,0,1,0,0,0,0],[0,0,0,0,4,0,0,0,9]
-  ]
+const presets={
+  easy:[[5,3,0,0,7,0,0,0,0],[6,0,0,1,9,5,0,0,0],[0,9,8,0,0,0,0,6,0],[8,0,0,0,6,0,0,0,3],[4,0,0,8,0,3,0,0,1],[7,0,0,0,2,0,0,0,6],[0,6,0,0,0,0,2,8,0],[0,0,0,4,1,9,0,0,5],[0,0,0,0,8,0,0,7,9]],
+  medium:[[0,0,0,2,6,0,7,0,1],[6,8,0,0,7,0,0,9,0],[1,9,0,0,0,4,5,0,0],[8,2,0,1,0,0,0,4,0],[0,0,4,6,0,2,9,0,0],[0,5,0,0,0,3,0,2,8],[0,0,9,3,0,0,0,7,4],[0,4,0,0,5,0,0,3,6],[7,0,3,0,1,8,0,0,0]],
+  hard:[[0,0,0,6,0,0,4,0,0],[7,0,0,0,0,3,6,0,0],[0,0,0,0,9,1,0,8,0],[0,0,0,0,0,0,0,0,0],[0,5,0,1,8,0,0,0,3],[0,0,0,3,0,6,0,4,5],[0,4,0,2,0,0,0,6,0],[9,0,3,0,0,0,0,0,0],[0,2,0,0,0,0,1,0,0]],
+  expert:[[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,3,0,8,5],[0,0,1,0,2,0,0,0,0],[0,0,0,5,0,7,0,0,0],[0,0,4,0,0,0,1,0,0],[0,9,0,0,0,0,0,0,0],[5,0,0,0,0,0,0,7,3],[0,0,2,0,1,0,0,0,0],[0,0,0,0,4,0,0,0,9]]
 };
 
-const cells = [];
+const cells=[];
+let currentImageData=null;
+let videoStream=null;
 
-function buildGrid() {
-  const tbl = document.getElementById('grid');
-  tbl.innerHTML = '';
-  for (let r = 0; r < 9; r++) {
-    const tr = document.createElement('tr');
-    cells[r] = [];
-    for (let c = 0; c < 9; c++) {
-      const td = document.createElement('td');
-      const inp = document.createElement('input');
-      inp.maxLength = 1;
-      inp.setAttribute('inputmode', 'numeric');
-      inp.addEventListener('keydown', e => {
-        if (!/^[1-9]$/.test(e.key) && e.key !== 'Backspace' && e.key !== 'Delete' && e.key !== 'Tab' && !e.key.startsWith('Arrow')) e.preventDefault();
-        navigate(e, r, c);
+// ── TABS ──────────────────────────────────────────────────────────────────────
+function switchTab(name,btn){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('panel-'+name).classList.add('active');
+  if(name!=='scan') stopCamera();
+}
+
+// ── GRID BUILD ────────────────────────────────────────────────────────────────
+function buildGrid(){
+  const tbl=document.getElementById('grid');tbl.innerHTML='';
+  for(let r=0;r<9;r++){
+    const tr=document.createElement('tr');cells[r]=[];
+    for(let c=0;c<9;c++){
+      const td=document.createElement('td'),inp=document.createElement('input');
+      inp.maxLength=1;inp.setAttribute('inputmode','numeric');
+      inp.addEventListener('keydown',e=>{
+        if(!/^[1-9]$/.test(e.key)&&e.key!=='Backspace'&&e.key!=='Delete'&&e.key!=='Tab'&&!e.key.startsWith('Arrow'))e.preventDefault();
+        navigate(e,r,c);
       });
-      inp.addEventListener('input', () => {
-        if (!/^[1-9]$/.test(inp.value)) inp.value = '';
-        inp.classList.remove('solved', 'error', 'given');
-        document.getElementById('status').className = 'status';
-        document.getElementById('status').textContent = '';
+      inp.addEventListener('input',()=>{
+        if(!/^[1-9]$/.test(inp.value))inp.value='';
+        inp.classList.remove('solved','error','given','ocr-filled');
+        setStatus('','');
       });
-      if (c === 2 || c === 5) td.classList.add('br');
-      if (r === 2 || r === 5) td.classList.add('bb');
-      td.appendChild(inp);
-      cells[r][c] = inp;
-      tr.appendChild(td);
+      if(c===2||c===5)td.classList.add('br');
+      if(r===2||r===5)td.classList.add('bb');
+      td.appendChild(inp);cells[r][c]=inp;tr.appendChild(td);
     }
     tbl.appendChild(tr);
   }
 }
 
-function navigate(e, r, c) {
-  const map = { ArrowUp:[-1,0], ArrowDown:[1,0], ArrowLeft:[0,-1], ArrowRight:[0,1] };
-  if (map[e.key]) {
-    e.preventDefault();
-    const [dr, dc] = map[e.key];
-    cells[Math.max(0,Math.min(8,r+dr))][Math.max(0,Math.min(8,c+dc))].focus();
-  }
+function navigate(e,r,c){
+  const m={ArrowUp:[-1,0],ArrowDown:[1,0],ArrowLeft:[0,-1],ArrowRight:[0,1]};
+  if(m[e.key]){e.preventDefault();const[dr,dc]=m[e.key];cells[Math.max(0,Math.min(8,r+dr))][Math.max(0,Math.min(8,c+dc))].focus();}
 }
 
-function loadPreset(name, btnElement) {
+// ── PRESETS ───────────────────────────────────────────────────────────────────
+function loadPreset(name,btn){
   clearAll();
-  
-  // Update segmented control selection style
-  document.querySelectorAll('.preset-btns button').forEach(b => b.classList.remove('active-preset'));
-  if (btnElement) btnElement.classList.add('active-preset');
+  document.querySelectorAll('.preset-btns button').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  const data=presets[name];
+  for(let r=0;r<9;r++)for(let c=0;c<9;c++)if(data[r][c]){cells[r][c].value=data[r][c];cells[r][c].classList.add('given');}
+  setStatus('','');
+}
 
-  const data = presets[name];
-  for (let r = 0; r < 9; r++) for (let c = 0; c < 9; c++) {
-    if (data[r][c]) { cells[r][c].value = data[r][c]; cells[r][c].classList.add('given'); }
+// ── CAMERA ────────────────────────────────────────────────────────────────────
+async function startCamera(){
+  try{
+    videoStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'},audio:false});
+    const vid=document.getElementById('camera-video');
+    vid.srcObject=videoStream;
+    document.getElementById('camera-view').style.display='flex';
+    document.getElementById('cam-open-btn').style.display='none';
+  }catch(e){
+    setStatus('err','Camera access denied. Please allow camera permission.');
   }
 }
 
-function getBoard() {
-  return cells.map(row => row.map(inp => parseInt(inp.value) || 0));
+function stopCamera(){
+  if(videoStream){videoStream.getTracks().forEach(t=>t.stop());videoStream=null;}
+  document.getElementById('camera-view').style.display='none';
+  document.getElementById('cam-open-btn').style.display='flex';
 }
 
-function isValid(b, r, c, n) {
-  for (let i = 0; i < 9; i++) if (b[r][i] === n || b[i][c] === n) return false;
-  const br = Math.floor(r/3)*3, bc = Math.floor(c/3)*3;
-  for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) if (b[br+i][bc+j] === n) return false;
+function snapPhoto(){
+  const vid=document.getElementById('camera-video');
+  const canvas=document.getElementById('canvas-hidden');
+  canvas.width=vid.videoWidth;canvas.height=vid.videoHeight;
+  canvas.getContext('2d').drawImage(vid,0,0);
+  currentImageData=canvas.toDataURL('image/jpeg',0.95);
+  showPreview(currentImageData);
+  stopCamera();
+}
+
+// ── FILE UPLOAD ───────────────────────────────────────────────────────────────
+function handleFile(e){
+  const file=e.target.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{currentImageData=ev.target.result;showPreview(currentImageData);};
+  reader.readAsDataURL(file);
+}
+
+function showPreview(src){
+  const wrap=document.getElementById('img-preview-wrap');
+  document.getElementById('img-preview').src=src;
+  wrap.style.display='block';
+  document.getElementById('ocr-btn').disabled=false;
+  setOCRStatus('');
+}
+
+// ── OCR ───────────────────────────────────────────────────────────────────────
+async function runOCR(){
+  if(!currentImageData)return;
+  const btn=document.getElementById('ocr-btn');
+  const progressWrap=document.getElementById('progress-wrap');
+  const progressBar=document.getElementById('progress-bar');
+  btn.disabled=true;
+  btn.innerHTML='<span class="spinner"></span> Reading puzzle...';
+  progressWrap.style.display='block';
+  progressBar.style.width='0%';
+  setOCRStatus('Preprocessing image...');
+  setStatus('info','Reading puzzle from image...');
+
+  try{
+    // Preprocess: greyscale + contrast boost on canvas
+    const processedDataUrl=preprocessImage(currentImageData);
+
+    setOCRStatus('Running character recognition...');
+
+    const result=await Tesseract.recognize(processedDataUrl,'eng',{
+      logger:m=>{
+        if(m.status==='recognizing text'){
+          const pct=Math.round(m.progress*100);
+          progressBar.style.width=pct+'%';
+          setOCRStatus('Recognising text... '+pct+'%');
+        }
+      },
+      tessedit_char_whitelist:'123456789 ',
+      tessedit_pageseg_mode:'6',
+    });
+
+    const grid=parseOCRResult(result.data.text);
+    if(grid){
+      fillGridFromOCR(grid);
+      setOCRStatus('✓ Puzzle read successfully. Review any uncertain cells.');
+      setStatus('ok','Puzzle loaded from image. Hit Solve when ready.');
+    } else {
+      setOCRStatus('Could not read the grid clearly. Try a cleaner photo with better lighting.');
+      setStatus('err','OCR could not extract a valid 9x9 grid.');
+    }
+  }catch(err){
+    setOCRStatus('Something went wrong: '+err.message);
+    setStatus('err','OCR failed. Try a different image.');
+  }finally{
+    btn.disabled=false;
+    btn.innerHTML='🔍 Read puzzle from image';
+    progressWrap.style.display='none';
+  }
+}
+
+function preprocessImage(dataUrl){
+  const img=new Image();
+  img.src=dataUrl;
+  const canvas=document.getElementById('canvas-hidden');
+  // Wait for image to be available (it already loaded since it's a data URL)
+  canvas.width=img.naturalWidth||900;
+  canvas.height=img.naturalHeight||900;
+  const ctx=canvas.getContext('2d');
+  ctx.drawImage(img,0,0);
+  // Greyscale + contrast
+  const imageData=ctx.getImageData(0,0,canvas.width,canvas.height);
+  const d=imageData.data;
+  for(let i=0;i<d.length;i+=4){
+    const grey=0.299*d[i]+0.587*d[i+1]+0.114*d[i+2];
+    // Increase contrast
+    const contrast=1.6;
+    const adjusted=Math.min(255,Math.max(0,(grey-128)*contrast+128));
+    d[i]=d[i+1]=d[i+2]=adjusted;
+  }
+  ctx.putImageData(imageData,0,0);
+  return canvas.toDataURL('image/png');
+}
+
+function parseOCRResult(text){
+  // Extract all digits and spaces, map to 9x9 grid
+  // Normalize: strip everything except digits, dots, pipes, newlines
+  const cleaned=text.replace(/[^1-9.\|\n\r ]/g,' ');
+  
+  // Try to find 81 digits/placeholders
+  const tokens=cleaned.split(/[\s\|\n\r]+/).filter(t=>t.length>0);
+  const digits=[];
+  
+  for(const token of tokens){
+    for(const ch of token){
+      if(ch>='1'&&ch<='9') digits.push(parseInt(ch));
+      else if(ch==='.'||ch==='0') digits.push(0);
+    }
+  }
+  
+  // Also try treating each character individually if we got too few
+  if(digits.length<81){
+    digits.length=0;
+    for(const ch of cleaned){
+      if(ch>='1'&&ch<='9') digits.push(parseInt(ch));
+      else if(ch==='.'||ch==='0'||ch===' ') digits.push(0);
+    }
+    // Remove runs of zeros that are likely whitespace artifacts
+    // Try to find a window of 81 that has at least 17 non-zero (minimum for valid sudoku)
+    for(let start=0;start<=digits.length-81;start++){
+      const window=digits.slice(start,start+81);
+      const nonZero=window.filter(v=>v>0).length;
+      if(nonZero>=17&&nonZero<=81){
+        return chunkIntoGrid(window);
+      }
+    }
+    return null;
+  }
+  
+  if(digits.length>=81){
+    // Take the first 81
+    return chunkIntoGrid(digits.slice(0,81));
+  }
+  
+  return null;
+}
+
+function chunkIntoGrid(arr){
+  const grid=[];
+  for(let r=0;r<9;r++) grid.push(arr.slice(r*9,r*9+9));
+  return grid;
+}
+
+function fillGridFromOCR(grid){
+  clearAll();
+  for(let r=0;r<9;r++)for(let c=0;c<9;c++){
+    if(grid[r][c]>0){
+      cells[r][c].value=grid[r][c];
+      cells[r][c].classList.add('ocr-filled');
+    }
+  }
+}
+
+// ── SOLVER ────────────────────────────────────────────────────────────────────
+function getBoard(){return cells.map(row=>row.map(inp=>parseInt(inp.value)||0));}
+
+function isValid(b,r,c,n){
+  for(let i=0;i<9;i++)if(b[r][i]===n||b[i][c]===n)return false;
+  const br=Math.floor(r/3)*3,bc=Math.floor(c/3)*3;
+  for(let i=0;i<3;i++)for(let j=0;j<3;j++)if(b[br+i][bc+j]===n)return false;
   return true;
 }
 
-function solveSudoku(b) {
-  for (let r = 0; r < 9; r++) for (let c = 0; c < 9; c++) {
-    if (b[r][c] === 0) {
-      for (let n = 1; n <= 9; n++) {
-        if (isValid(b, r, c, n)) {
-          b[r][c] = n;
-          if (solveSudoku(b)) return true;
-          b[r][c] = 0;
-        }
-      }
+function solveSudoku(b){
+  for(let r=0;r<9;r++)for(let c=0;c<9;c++){
+    if(b[r][c]===0){
+      for(let n=1;n<=9;n++){if(isValid(b,r,c,n)){b[r][c]=n;if(solveSudoku(b))return true;b[r][c]=0;}}
       return false;
     }
   }
   return true;
 }
 
-function validateInitial(b) {
-  for (let r = 0; r < 9; r++) for (let c = 0; c < 9; c++) {
-    if (b[r][c] !== 0) {
-      const v = b[r][c]; b[r][c] = 0;
-      const ok = isValid(b, r, c, v); b[r][c] = v;
-      if (!ok) return false;
-    }
+function validateInitial(b){
+  for(let r=0;r<9;r++)for(let c=0;c<9;c++){
+    if(b[r][c]!==0){const v=b[r][c];b[r][c]=0;const ok=isValid(b,r,c,v);b[r][c]=v;if(!ok)return false;}
   }
   return true;
 }
 
-function solve() {
-  const status = document.getElementById('status');
-  const b = getBoard();
-  if (!validateInitial(b)) {
-    status.className = 'status err';
-    status.textContent = 'Conflicting entries detected.';
-    return;
-  }
-  const copy = b.map(row => [...row]);
-  const t = performance.now();
-  if (solveSudoku(copy)) {
-    for (let r = 0; r < 9; r++) for (let c = 0; c < 9; c++) {
-      if (b[r][c] === 0) { cells[r][c].value = copy[r][c]; cells[r][c].classList.add('solved'); }
-    }
-    status.className = 'status ok';
-    status.textContent = `Solved in ${(performance.now()-t).toFixed(1)}ms`;
-  } else {
-    status.className = 'status err';
-    status.textContent = 'No solution exists.';
+function solve(){
+  const b=getBoard();
+  if(!validateInitial(b)){setStatus('err','✕ Conflicting numbers detected. Check your input.');return;}
+  const copy=b.map(row=>[...row]);
+  const t=performance.now();
+  if(solveSudoku(copy)){
+    for(let r=0;r<9;r++)for(let c=0;c<9;c++)if(b[r][c]===0){cells[r][c].value=copy[r][c];cells[r][c].classList.add('solved');}
+    setStatus('ok',`✓ Solved in ${(performance.now()-t).toFixed(1)}ms`);
+  }else{
+    setStatus('err','✕ No solution exists for this puzzle.');
   }
 }
 
-function clearSolved() {
-  for (let r = 0; r < 9; r++) for (let c = 0; c < 9; c++) {
-    if (cells[r][c].classList.contains('solved')) { cells[r][c].value = ''; cells[r][c].classList.remove('solved'); }
+function clearSolved(){
+  for(let r=0;r<9;r++)for(let c=0;c<9;c++){
+    if(cells[r][c].classList.contains('solved')){cells[r][c].value='';cells[r][c].classList.remove('solved');}
     cells[r][c].classList.remove('error');
   }
-  document.getElementById('status').className = 'status';
-  document.getElementById('status').textContent = '';
+  setStatus('','');
 }
 
-function clearAll() {
-  document.querySelectorAll('.preset-btns button').forEach(b => b.classList.remove('active-preset'));
-  for (let r = 0; r < 9; r++) for (let c = 0; c < 9; c++) { cells[r][c].value = ''; cells[r][c].className = ''; }
-  document.getElementById('status').className = 'status';
-  document.getElementById('status').textContent = '';
+function clearAll(){
+  for(let r=0;r<9;r++)for(let c=0;c<9;c++){cells[r][c].value='';cells[r][c].className='';}
+  document.querySelectorAll('.preset-btns button').forEach(b=>b.classList.remove('active'));
+  setStatus('','');
 }
+
+function setStatus(cls,msg){const s=document.getElementById('status');s.className='status '+cls;s.textContent=msg;}
+function setOCRStatus(msg){document.getElementById('ocr-status').textContent=msg;}
 
 buildGrid();
 </script>
